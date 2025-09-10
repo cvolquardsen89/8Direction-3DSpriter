@@ -1,0 +1,25 @@
+{
+  "name": "8direction-3dspriter",
+  "version": "1.0.0",
+  "description": "An 8 directional 2D sprite sheet maker using 3D animation files",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server . -p 8080 -c-1",
+    "dev": "npx http-server . -p 8080 -c-1"
+  },
+  "dependencies": {
+    "three": "^0.157.0"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "keywords": [
+    "3d",
+    "sprite-sheet",
+    "animation",
+    "fbx",
+    "game-development"
+  ],
+  "author": "8Direction-3DSpriter",
+  "license": "MIT"
+}

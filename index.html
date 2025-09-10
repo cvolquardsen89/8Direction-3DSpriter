@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8Direction 3D Spriter</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>8Direction 3D Spriter</h1>
+            <p>Create 2D sprite sheets from 3D animations</p>
+        </header>
+
+        <div class="container">
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <div class="section">
+                    <h3>Import Model</h3>
+                    <input type="file" id="fbxInput" accept=".fbx" />
+                    <button id="loadBtn" disabled>Load FBX</button>
+                </div>
+
+                <div class="section">
+                    <h3>Camera Controls</h3>
+                    <div class="camera-presets">
+                        <button class="preset-btn" data-direction="front">Front</button>
+                        <button class="preset-btn" data-direction="front-right">Front-Right</button>
+                        <button class="preset-btn" data-direction="right">Right</button>
+                        <button class="preset-btn" data-direction="back-right">Back-Right</button>
+                        <button class="preset-btn" data-direction="back">Back</button>
+                        <button class="preset-btn" data-direction="back-left">Back-Left</button>
+                        <button class="preset-btn" data-direction="left">Left</button>
+                        <button class="preset-btn" data-direction="front-left">Front-Left</button>
+                    </div>
+                    
+                    <div class="manual-controls">
+                        <label>Camera Distance: <input type="range" id="cameraDistance" min="1" max="20" value="5" step="0.1" /></label>
+                        <label>Camera Height: <input type="range" id="cameraHeight" min="-5" max="5" value="0" step="0.1" /></label>
+                        <label>Model Rotation Y: <input type="range" id="modelRotationY" min="0" max="360" value="0" step="1" /></label>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Lighting</h3>
+                    <label>Ambient Light: <input type="range" id="ambientLight" min="0" max="2" value="0.4" step="0.1" /></label>
+                    <label>Directional Light: <input type="range" id="directionalLight" min="0" max="2" value="1" step="0.1" /></label>
+                    <label>Light Position X: <input type="range" id="lightPosX" min="-10" max="10" value="5" step="0.5" /></label>
+                    <label>Light Position Y: <input type="range" id="lightPosY" min="-10" max="10" value="5" step="0.5" /></label>
+                    <label>Light Position Z: <input type="range" id="lightPosZ" min="-10" max="10" value="5" step="0.5" /></label>
+                </div>
+
+                <div class="section">
+                    <h3>Animation</h3>
+                    <div id="animationControls" style="display: none;">
+                        <label>Animation: <select id="animationSelect"></select></label>
+                        <label>Frame Count: <input type="number" id="frameCount" min="1" max="32" value="8" /></label>
+                        <button id="playAnimation">Play</button>
+                        <button id="pauseAnimation">Pause</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Export</h3>
+                    <label>Sprite Size: <input type="number" id="spriteSize" min="32" max="512" value="128" step="16" /> px</label>
+                    <label>Sheet Columns: <input type="number" id="sheetColumns" min="1" max="16" value="8" /></label>
+                    <button id="generateSprites" disabled>Generate Sprite Sheet</button>
+                    <button id="exportSheet" disabled>Export PNG</button>
+                </div>
+            </div>
+
+            <!-- 3D Viewer -->
+            <div class="viewer-panel">
+                <div id="threejsContainer"></div>
+                <div class="viewer-info">
+                    <div id="modelInfo">No model loaded</div>
+                </div>
+            </div>
+
+            <!-- Preview Panel -->
+            <div class="preview-panel">
+                <h3>Sprite Sheet Preview</h3>
+                <div id="spritePreview"></div>
+                <canvas id="exportCanvas" style="display: none;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="simple-3d.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

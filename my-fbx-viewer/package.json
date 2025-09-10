@@ -1,0 +1,25 @@
+{
+  "name": "my-fbx-viewer",
+  "version": "1.0.0",
+  "description": "A simple viewer for FBX files using three.js",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "http-server src",
+    "build": "webpack"
+  },
+  "dependencies": {
+    "three": "^0.152.0"
+  },
+  "devDependencies": {
+    "webpack": "^5.88.0",
+    "webpack-cli": "^5.1.4",
+    "http-server": "^14.1.0"
+  },
+  "keywords": [
+    "fbx",
+    "viewer",
+    "three.js"
+  ],
+  "author": "",
+  "license": "MIT"
+}

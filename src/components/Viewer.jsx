@@ -423,8 +423,8 @@ function Viewer({ fileUrl, fileName, isPlaying, animationTime, setMaxTime, maxTi
         />
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={lightIntensity} color={lightColor} />
-        {/* Grid helper - moved to render first so models appear above it */}
-        <Grid args={[10, 10]} cellSize={1} cellThickness={0.5} cellColor="#666666" sectionSize={5} sectionThickness={1} sectionColor="#888888" fadeDistance={25} fadeStrength={1} />
+        {/* Grid helper - only show when not exporting */}
+        {!exportTime && <Grid args={[10, 10]} cellSize={1} cellThickness={0.5} cellColor="#666666" sectionSize={5} sectionThickness={1} sectionColor="#888888" fadeDistance={25} fadeStrength={1} />}
         {/* Only show the cube if no model is loaded */}
         {!fileUrl && (
           <mesh>
@@ -445,8 +445,8 @@ function Viewer({ fileUrl, fileName, isPlaying, animationTime, setMaxTime, maxTi
             exportTime={exportTime}
           />
         )}
-        {/* Add OrbitControls for mouse interaction */}
-        {enableOrbit && <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />}
+        {/* Add OrbitControls for mouse interaction - only show when not exporting */}
+        {enableOrbit && !exportTime && <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />}
         <ExportHandler 
           fileName={fileName} 
           maxTime={maxTime} 

@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8Direction 3D Spriter - Convert 3D Models to 2D Sprites</title>
+    <meta name="description" content="Desktop application for converting 3D models (FBX, GLTF, OBJ) into 2D sprite sheets. Perfect for game developers.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/libs/inflate.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/libs/fflate.min.js"></script>
+    <style>
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Animation Controls Slider */
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+        }
+        
+        .slider::-moz-range-thumb {
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+        }
+        
+        /* Element Selector Tool */
+        .selector-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10000;
+            display: none;
+        }
+        
+        .selector-highlight {
+            position: absolute;
+            border: 3px solid #ff0080;
+            background: rgba(255, 0, 128, 0.1);
+            pointer-events: none;
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.5);
+        }
+        
+        .selector-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 10001;
+            max-width: 300px;
+            display: none;
+        }
+        
+        .selector-toggle {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: #ff0080;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 10002;
+            transition: all 0.3s ease;
+        }
+        
+        .selector-toggle:hover {
+            background: #e6006f;
+            transform: scale(1.05);
+        }
+        
+        .selector-toggle.active {
+            background: #00ff88;
+            color: #000;
+        }
+        
+        .selector-copy-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            margin-top: 5px;
+        }
+        
+        .selector-copy-btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    
+    <!-- Header -->
+    <header class="bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">8D</span>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-white">8Direction 3D Spriter</h1>
+                        <p class="text-xs text-gray-400">3D to 2D Sprite Converter</p>
+                    </div>
+                </div>
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-gray-300 hover:text-white transition-colors">Features</a>
+                    <a href="#gallery" class="text-gray-300 hover:text-white transition-colors">Gallery</a>
+                    <a href="#pricing" class="text-gray-300 hover:text-white transition-colors">Pricing</a>
+                    <button class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all">
+                        Download
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen flex items-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h1 class="text-5xl lg:text-6xl font-bold leading-tight mb-6">
+                        Convert <span class="gradient-text">3D Models</span><br>
+                        into <span class="gradient-text">2D Sprites</span>
+                    </h1>
+                    <p class="text-xl text-gray-300 mb-8 leading-relaxed">
+                        Transform your 3D models (FBX, GLTF, OBJ) into professional sprite sheets. 
+                        Generate 8-directional sprites, animations, and custom angles in seconds.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                        <button class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-600 hover:to-purple-700 transition-all">
+                            Download Free Trial
+                        </button>
+                        <button class="bg-gray-800/50 border border-gray-700 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-700/50 transition-all">
+                            Watch Demo
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-6 text-center">
+                        <div>
+                            <div class="text-2xl font-bold text-white mb-1">FBX/GLTF/OBJ</div>
+                            <div class="text-gray-400 text-sm">Supported Formats</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-white mb-1">8-Direction</div>
+                            <div class="text-gray-400 text-sm">Auto Sprites</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-white mb-1">Instant</div>
+                            <div class="text-gray-400 text-sm">Generation</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- App Screenshot Placeholder -->
+                <div class="relative">
+                    <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 shadow-2xl">
+                        <div class="aspect-video bg-gray-700 rounded-lg overflow-hidden mb-4">
+                            <img src="Capture2.PNG" alt="3D Sprite App - Animation Controls" class="w-full h-full object-cover rounded-lg">
+                        </div>
+                        <div class="text-center">
+                            <h3 class="text-white text-lg font-semibold mb-2">8Direction 3D Spriter Interface</h3>
+                            <p class="text-gray-400 text-sm">Simple drag-and-drop workflow</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="bg-gray-900 py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-white mb-6">
+                    Simple <span class="gradient-text">Three-Step Process</span>
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    From 3D model to game-ready sprites in just three easy steps.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Step 1 -->
+                <div class="bg-gray-800/50 rounded-2xl p-8 border border-gray-700 text-center">
+                    <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white mb-6 mx-auto">
+                        <span class="text-2xl font-bold">1</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Import Model</h3>
+                    <div class="aspect-video bg-gray-700 rounded-lg overflow-hidden mb-4 relative">
+                        <!-- Using your actual screenshot file -->
+                        <img src="Capture.PNG" 
+                             alt="8Direction 3D Spriter Import Interface - File Browser showing Jump.fbx selection" 
+                             class="w-full h-full object-cover"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="w-full h-full flex items-center justify-center text-center absolute inset-0" style="display:none;">
+                            <div>
+                                <div class="text-4xl mb-2">📁</div>
+                                <p class="text-gray-400 text-sm">Loading screenshot...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-300">Drag and drop your FBX, GLTF, or OBJ files</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="bg-gray-800/50 rounded-2xl p-8 border border-gray-700 text-center">
+                    <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white mb-6 mx-auto">
+                        <span class="text-2xl font-bold">2</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Configure</h3>
+                    <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center mb-4 overflow-hidden">
+                        <img src="Configure.png" alt="8Direction 3D Spriter Configure Interface" class="w-full h-full object-cover rounded-lg" 
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="text-center hidden">
+                            <div class="text-4xl mb-2">⚙️</div>
+                            <p class="text-gray-400 text-sm">Settings Screenshot</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300">Set angles, animation frames, and output settings</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="bg-gray-800/50 rounded-2xl p-8 border border-gray-700 text-center">
+                    <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl flex items-center justify-center text-white mb-6 mx-auto">
+                        <span class="text-2xl font-bold">3</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Export</h3>
+                    <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center mb-4 overflow-hidden">
+                        <img src="Export.png" alt="8Direction 3D Spriter Export Interface" class="w-full h-full object-cover rounded-lg" 
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="text-center hidden">
+                            <div class="text-4xl mb-2">💾</div>
+                            <p class="text-gray-400 text-sm">Export Screenshot</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300">Get your sprite sheets ready for any game engine</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-white mb-6">
+                    See It In <span class="gradient-text">Action</span>
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    Real examples of 3D models converted to 2D sprites
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Before/After Example 1 -->
+                <div class="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
+                    <h3 class="text-lg font-semibold text-white mb-4">8-Direction Character</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-sm text-gray-400 mb-2">Before: 3D Model</p>
+                            <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center relative overflow-hidden">
+                                <canvas id="model-viewer" class="w-full h-full rounded-lg"></canvas>
+                                <div id="model-loading" class="absolute inset-0 flex items-center justify-center bg-gray-700 rounded-lg">
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">🔄</div>
+                                        <p class="text-gray-400 text-xs">Loading 3D Model...</p>
+                                    </div>
+                                </div>
+                                <div id="model-error" class="absolute inset-0 flex items-center justify-center bg-gray-700 rounded-lg hidden">
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">🎮</div>
+                                        <p class="text-gray-400 text-xs">3D Model Preview</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-400 mb-2">After: Sprite Sheet</p>
+                            <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center relative overflow-hidden">
+                                <div id="sprite-viewer" class="w-full h-full relative cursor-grab active:cursor-grabbing">
+                                    <img id="sprite-image" src="Jump.fbx_spritesheet.png" alt="Generated Sprite Sheet" 
+                                         class="absolute transition-transform duration-200 ease-out w-full h-full object-contain"
+                                         style="transform-origin: 0 0;"
+                                         onload="this.nextElementSibling.style.display='none';"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="w-full h-full flex items-center justify-center" style="display: flex;">
+                                        <div class="text-center">
+                                            <div class="text-3xl mb-2">🖼️</div>
+                                            <p class="text-gray-400 text-xs">Sprite Sheet Result</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Zoom Controls -->
+                                <div class="absolute bottom-4 right-4 flex flex-col gap-2 bg-black/50 rounded-lg p-2">
+                                    <button id="zoom-in" class="text-white hover:text-blue-400 transition-colors p-1">
+                                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                                            <path d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"/>
+                                        </svg>
+                                    </button>
+                                    <button id="zoom-out" class="text-white hover:text-blue-400 transition-colors p-1">
+                                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                                            <path d="M7 9v1h5V9H7z"/>
+                                        </svg>
+                                    </button>
+                                    <button id="zoom-reset" class="text-white hover:text-blue-400 transition-colors p-1 text-xs">
+                                        1:1
+                                    </button>
+                                </div>
+                                <!-- Instructions -->
+                                <div class="absolute top-4 left-4 bg-black/50 rounded-lg px-3 py-2 text-white text-xs">
+                                    Click and drag to pan • Scroll to zoom
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Before/After Example 2 -->
+                <div class="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
+                    <h3 class="text-lg font-semibold text-white mb-4">Side-Scrolling Animation</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-sm text-gray-400 mb-2">Before: 3D Animation</p>
+                            <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center relative overflow-hidden">
+                                <canvas id="animation-viewer" class="w-full h-full rounded-lg"></canvas>
+                                <div id="animation-loading" class="absolute inset-0 flex items-center justify-center bg-gray-700 rounded-lg">
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">🔄</div>
+                                        <p class="text-gray-400 text-xs">Loading 3D Animation...</p>
+                                    </div>
+                                </div>
+                                <div id="animation-error" class="absolute inset-0 flex items-center justify-center bg-gray-700 rounded-lg hidden">
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">🏃</div>
+                                        <p class="text-gray-400 text-xs">3D Animation</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-400 mb-2">After: Animation Frames</p>
+                            <div class="aspect-video bg-gray-700 rounded-lg overflow-hidden">
+                                <img src="ezgif.com-speed.gif" alt="Animation Sprites Demo" class="w-full h-full object-cover rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Before/After Example 3 -->
+                <div class="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
+                    <h3 class="text-lg font-semibold text-white mb-4">Custom Angle Views</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-sm text-gray-400 mb-2">Before: 3D Object</p>
+                            <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">🏠</div>
+                                    <p class="text-gray-400 text-xs">3D Building</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-400 mb-2">After: Multiple Angles</p>
+                            <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">🔄</div>
+                                    <p class="text-gray-400 text-xs">Angle Variations</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="bg-gray-900 py-20">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-white mb-6">
+                    Simple <span class="gradient-text">Pricing</span>
+                </h2>
+                <p class="text-xl text-gray-300">
+                    Affordable pricing for indie game developers
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Web Trial -->
+                <div class="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-2 border-green-500/30 rounded-3xl p-8">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-white mb-2">Web Trial</h3>
+                        <p class="text-gray-300 mb-6">Try our web version</p>
+                        <div class="text-4xl font-bold text-white mb-2">$6.99</div>
+                        <div class="text-gray-400 text-sm">30-day access</div>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-green-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">Web-based converter</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-green-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">FBX, GLTF, OBJ support</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-green-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">Basic sprite generation</span>
+                        </li>
+                    </ul>
+                    <button class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-semibold">
+                        Try Web Version
+                    </button>
+                </div>
+
+                <!-- Desktop -->
+                <div class="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-blue-500/30 rounded-3xl p-8">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-white mb-2">Desktop</h3>
+                        <p class="text-gray-300 mb-6">Full desktop application</p>
+                        <div class="text-4xl font-bold text-white mb-2">$14.99</div>
+                        <div class="text-gray-400 text-sm">One-time purchase</div>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-blue-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">All web features</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-blue-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">Faster processing</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-blue-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">Offline use</span>
+                        </li>
+                    </ul>
+                    <button class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold">
+                        Buy Desktop
+                    </button>
+                </div>
+
+                <!-- Complete Bundle -->
+                <div class="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 border-purple-500/30 rounded-3xl p-8">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-white mb-2">Complete Bundle</h3>
+                        <p class="text-gray-300 mb-6">Desktop + Web forever</p>
+                        <div class="text-4xl font-bold text-white mb-2">$19.99</div>
+                        <div class="text-gray-400 text-sm">Best value</div>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-purple-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-purple-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">Everything from Desktop</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-purple-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-purple-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">Lifetime web access</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-purple-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-purple-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">Priority support</span>
+                        </li>
+                    </ul>
+                    <button class="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white px-8 py-4 rounded-xl font-semibold">
+                        Get Complete Bundle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-950 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="flex items-center justify-center space-x-3 mb-4">
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold">8D</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">8Direction 3D Spriter</h3>
+                </div>
+                <p class="text-gray-400 mb-6">
+                    Transform your 3D models into professional 2D sprites for game development.
+                </p>
+                <div class="text-sm text-gray-500">
+                    © 2025 8Direction 3D Spriter. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Element Selector Tool -->
+    <button class="selector-toggle" id="selectorToggle">🎯 Select Element</button>
+    <div class="selector-overlay" id="selectorOverlay">
+        <div class="selector-highlight" id="selectorHighlight"></div>
+    </div>
+    <div class="selector-info" id="selectorInfo">
+        <div><strong>Element:</strong> <span id="elementTag"></span></div>
+        <div><strong>Classes:</strong> <span id="elementClasses"></span></div>
+        <div><strong>ID:</strong> <span id="elementId"></span></div>
+        <div><strong>Text:</strong> <span id="elementText"></span></div>
+        <div><strong>Path:</strong> <span id="elementPath"></span></div>
+        <button class="selector-copy-btn" onclick="copyElementInfo()">📋 Copy Info</button>
+    </div>
+
+    <script>
+        let selectorMode = false;
+        let currentElement = null;
+        
+        const toggle = document.getElementById('selectorToggle');
+        const overlay = document.getElementById('selectorOverlay');
+        const highlight = document.getElementById('selectorHighlight');
+        const info = document.getElementById('selectorInfo');
+        
+        toggle.addEventListener('click', () => {
+            selectorMode = !selectorMode;
+            if (selectorMode) {
+                toggle.textContent = '❌ Exit Selector';
+                toggle.classList.add('active');
+                overlay.style.display = 'block';
+                info.style.display = 'block';
+                document.body.style.cursor = 'crosshair';
+                addSelectorListeners();
+            } else {
+                toggle.textContent = '🎯 Select Element';
+                toggle.classList.remove('active');
+                overlay.style.display = 'none';
+                info.style.display = 'none';
+                document.body.style.cursor = 'default';
+                removeSelectorListeners();
+            }
+        });
+        
+        function addSelectorListeners() {
+            document.addEventListener('mouseover', handleMouseOver);
+            document.addEventListener('mouseout', handleMouseOut);
+            document.addEventListener('click', handleClick);
+        }
+        
+        function removeSelectorListeners() {
+            document.removeEventListener('mouseover', handleMouseOver);
+            document.removeEventListener('mouseout', handleMouseOut);
+            document.removeEventListener('click', handleClick);
+        }
+        
+        function handleMouseOver(e) {
+            if (!selectorMode || e.target.closest('.selector-toggle, .selector-info, .selector-overlay')) return;
+            
+            currentElement = e.target;
+            const rect = e.target.getBoundingClientRect();
+            
+            highlight.style.left = rect.left + 'px';
+            highlight.style.top = rect.top + 'px';
+            highlight.style.width = rect.width + 'px';
+            highlight.style.height = rect.height + 'px';
+            highlight.style.display = 'block';
+            
+            updateElementInfo(e.target);
+        }
+        
+        function handleMouseOut(e) {
+            if (!selectorMode) return;
+            // Keep highlight visible for better UX
+        }
+        
+        function handleClick(e) {
+            if (!selectorMode || e.target.closest('.selector-toggle, .selector-info')) return;
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Flash effect to show selection
+            highlight.style.background = 'rgba(0, 255, 136, 0.3)';
+            setTimeout(() => {
+                highlight.style.background = 'rgba(255, 0, 128, 0.1)';
+            }, 200);
+            
+            // Copy element info automatically
+            copyElementInfo();
+            
+            // Show success message
+            const originalText = toggle.textContent;
+            toggle.textContent = '✅ Element Selected!';
+            setTimeout(() => {
+                toggle.textContent = originalText;
+            }, 1500);
+        }
+        
+        function updateElementInfo(element) {
+            document.getElementById('elementTag').textContent = element.tagName.toLowerCase();
+            document.getElementById('elementClasses').textContent = element.className || 'none';
+            document.getElementById('elementId').textContent = element.id || 'none';
+            document.getElementById('elementText').textContent = element.textContent.trim().substring(0, 50) + (element.textContent.length > 50 ? '...' : '');
+            document.getElementById('elementPath').textContent = getElementPath(element);
+        }
+        
+        function getElementPath(element) {
+            const path = [];
+            while (element && element.nodeType === Node.ELEMENT_NODE) {
+                let selector = element.nodeName.toLowerCase();
+                if (element.id) {
+                    selector += '#' + element.id;
+                } else if (element.className) {
+                    selector += '.' + element.className.split(' ').join('.');
+                }
+                path.unshift(selector);
+                element = element.parentNode;
+            }
+            return path.join(' > ');
+        }
+        
+        function copyElementInfo() {
+            if (!currentElement) return;
+            
+            const info = {
+                tag: currentElement.tagName.toLowerCase(),
+                classes: currentElement.className,
+                id: currentElement.id,
+                text: currentElement.textContent.trim(),
+                path: getElementPath(currentElement),
+                html: currentElement.outerHTML.substring(0, 200) + (currentElement.outerHTML.length > 200 ? '...' : '')
+            };
+            
+            const copyText = `Element Info:
+Tag: ${info.tag}
+Classes: ${info.classes || 'none'}
+ID: ${info.id || 'none'}
+Text: ${info.text.substring(0, 100)}${info.text.length > 100 ? '...' : ''}
+Path: ${info.path}
+HTML: ${info.html}
+
+Tell the AI: "Focus on this element" and paste this info.`;
+            
+            navigator.clipboard.writeText(copyText).then(() => {
+                console.log('Element info copied to clipboard!');
+            }).catch(err => {
+                console.log('Copy failed, element info:', info);
+            });
+        }
+        
+        // Escape key to exit selector mode
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && selectorMode) {
+                toggle.click();
+            }
+        });
+    </script>
+
+    <!-- 3D Model Viewer Script -->
+    <script>
+        // Initialize 3D Model Viewer
+        function init3DViewer() {
+            const canvas = document.getElementById('model-viewer');
+            const loadingDiv = document.getElementById('model-loading');
+            const errorDiv = document.getElementById('model-error');
+            
+            if (!canvas) return;
+            
+            // Scene setup
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x374151); // gray-700
+            
+            // Camera setup
+            const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+            camera.position.set(0, 1, 3);
+            
+            // Renderer setup
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 5, 5);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // Controls (simple rotation)
+            let model = null;
+            let isMouseDown = false;
+            let mouseX = 0;
+            let mouseY = 0;
+            
+            canvas.addEventListener('mousedown', (e) => {
+                isMouseDown = true;
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            
+            canvas.addEventListener('mousemove', (e) => {
+                if (!isMouseDown || !model) return;
+                
+                const deltaX = e.clientX - mouseX;
+                const deltaY = e.clientY - mouseY;
+                
+                model.rotation.y += deltaX * 0.01;
+                model.rotation.x += deltaY * 0.01;
+                
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            
+            canvas.addEventListener('mouseup', () => {
+                isMouseDown = false;
+            });
+            
+            // Load GLB model
+            const loader = new THREE.GLTFLoader();
+            loader.load(
+                'model.glb',
+                (gltf) => {
+                    model = gltf.scene;
+                    
+                    // Center and scale the model
+                    const box = new THREE.Box3().setFromObject(model);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    
+                    // Center the model
+                    model.position.sub(center);
+                    
+                    // Scale to fit nicely in view (zoomed in more)
+                    const maxSize = Math.max(size.x, size.y, size.z);
+                    const scale = 3 / maxSize; // Increased from 2 to 3 for more zoom
+                    model.scale.setScalar(scale);
+                    
+                    scene.add(model);
+                    loadingDiv.style.display = 'none';
+                    
+                    // Auto-rotation
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        if (model && !isMouseDown) {
+                            model.rotation.y += 0.005;
+                        }
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+                },
+                (progress) => {
+                    // Loading progress
+                    console.log('Loading progress:', (progress.loaded / progress.total * 100) + '%');
+                },
+                (error) => {
+                    console.error('Error loading model:', error);
+                    loadingDiv.style.display = 'none';
+                    errorDiv.style.display = 'flex';
+                }
+            );
+            
+            // Handle window resize
+            function onWindowResize() {
+                if (canvas.clientWidth === 0 || canvas.clientHeight === 0) return;
+                
+                camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            }
+            
+            window.addEventListener('resize', onWindowResize);
+            
+            // Observer to handle when element becomes visible
+            const observer = new ResizeObserver(() => {
+                onWindowResize();
+            });
+            observer.observe(canvas);
+        }
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init3DViewer);
+    </script>
+
+    <!-- FBX Animation Viewer Script -->
+    <script>
+        // Initialize Simple 3D Animation Viewer (loads FBX with animation)
+        function initFBXViewer() {
+            const canvas = document.getElementById('animation-viewer');
+            const loadingDiv = document.getElementById('animation-loading');
+            const errorDiv = document.getElementById('animation-error');
+            
+            if (!canvas) return;
+            
+            // Scene setup
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x374151); // gray-700
+            
+            // Camera setup
+            const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+            camera.position.set(0, 1, 3);
+            
+            // Renderer setup
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 5, 5);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // Animation variables
+            let model = null;
+            let mixer = null;
+            let clock = new THREE.Clock();
+            let isMouseDown = false;
+            let mouseX = 0;
+            let mouseY = 0;
+            
+            canvas.addEventListener('mousedown', (e) => {
+                isMouseDown = true;
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            
+            canvas.addEventListener('mousemove', (e) => {
+                if (!isMouseDown || !model) return;
+                
+                const deltaX = e.clientX - mouseX;
+                const deltaY = e.clientY - mouseY;
+                
+                model.rotation.y += deltaX * 0.01;
+                model.rotation.x += deltaY * 0.01;
+                
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            
+            canvas.addEventListener('mouseup', () => {
+                isMouseDown = false;
+            });
+            
+            // Load Jump.fbx with the actual animation
+            console.log('Attempting to load Jump.fbx...');
+            const loader = new THREE.FBXLoader();
+            
+            loader.load(
+                'Jump.fbx',
+                (fbx) => {
+                    console.log('FBX loaded successfully!', fbx);
+                    console.log('FBX animations:', fbx.animations);
+                    
+                    model = fbx;
+                    
+                    // Center and scale the model
+                    const box = new THREE.Box3().setFromObject(model);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    
+                    // Center the model
+                    model.position.sub(center);
+                    
+                    // Scale to fit nicely in view
+                    const maxSize = Math.max(size.x, size.y, size.z);
+                    const scale = 3 / maxSize;
+                    model.scale.setScalar(scale);
+                    
+                    scene.add(model);
+                    
+                    // Setup animation if FBX has animations
+                    if (fbx.animations && fbx.animations.length > 0) {
+                        console.log('Setting up animation mixer...');
+                        mixer = new THREE.AnimationMixer(model);
+                        
+                        // Play all animations found in the FBX
+                        fbx.animations.forEach((clip, index) => {
+                            console.log(`Playing animation ${index}:`, clip.name, 'duration:', clip.duration);
+                            const action = mixer.clipAction(clip);
+                            action.setLoop(THREE.LoopRepeat);
+                            action.play();
+                        });
+                    } else {
+                        console.log('No animations found in FBX file');
+                    }
+                    
+                    loadingDiv.style.display = 'none';
+                    
+                    // Animation loop
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        
+                        const delta = clock.getDelta();
+                        
+                        // Update animation mixer if it exists
+                        if (mixer) {
+                            mixer.update(delta);
+                        }
+                        
+                        // Auto-rotation when not being manually controlled
+                        if (!isMouseDown) {
+                            model.rotation.y += 0.003; // Slower rotation so we can see animation
+                        }
+                        
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+                },
+                (progress) => {
+                    const percent = (progress.loaded / progress.total * 100);
+                    console.log('Loading FBX progress:', percent + '%');
+                },
+                (error) => {
+                    console.error('Error loading FBX:', error);
+                    console.log('FBX loader failed, falling back to GLB model...');
+                    
+                    // Fallback to GLB model if FBX fails
+                    const gltfLoader = new THREE.GLTFLoader();
+                    gltfLoader.load(
+                        'model.glb',
+                        (gltf) => {
+                            console.log('GLB fallback loaded successfully');
+                            model = gltf.scene;
+                            
+                            const box = new THREE.Box3().setFromObject(model);
+                            const center = box.getCenter(new THREE.Vector3());
+                            const size = box.getSize(new THREE.Vector3());
+                            
+                            model.position.sub(center);
+                            const maxSize = Math.max(size.x, size.y, size.z);
+                            const scale = 3 / maxSize;
+                            model.scale.setScalar(scale);
+                            
+                            scene.add(model);
+                            loadingDiv.style.display = 'none';
+                            
+                            function animate() {
+                                requestAnimationFrame(animate);
+                                if (!isMouseDown) {
+                                    model.rotation.y += 0.005;
+                                }
+                                renderer.render(scene, camera);
+                            }
+                            animate();
+                        },
+                        undefined,
+                        (fallbackError) => {
+                            console.error('Both FBX and GLB failed:', fallbackError);
+                            loadingDiv.style.display = 'none';
+                            errorDiv.style.display = 'flex';
+                        }
+                    );
+                }
+            );
+            
+            // Handle window resize
+            function onWindowResize() {
+                if (canvas.clientWidth === 0 || canvas.clientHeight === 0) return;
+                
+                camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            }
+            
+            window.addEventListener('resize', onWindowResize);
+            
+            // Observer to handle when element becomes visible
+            const observer = new ResizeObserver(() => {
+                onWindowResize();
+            });
+            observer.observe(canvas);
+        }
+        
+        // Initialize FBX viewer when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initFBXViewer);
+    </script>
+
+    <!-- Sprite Sheet Viewer Script -->
+    <script>
+        // Initialize Sprite Sheet Viewer
+        function initSpriteViewer() {
+            const viewer = document.getElementById('sprite-viewer');
+            const image = document.getElementById('sprite-image');
+            const zoomInBtn = document.getElementById('zoom-in');
+            const zoomOutBtn = document.getElementById('zoom-out');
+            const zoomResetBtn = document.getElementById('zoom-reset');
+            
+            if (!viewer || !image) return;
+            
+            let scale = 1;
+            let translateX = 0;
+            let translateY = 0;
+            let isDragging = false;
+            let startX = 0;
+            let startY = 0;
+            let lastTranslateX = 0;
+            let lastTranslateY = 0;
+            
+            const minScale = 0.5;
+            const maxScale = 4;
+            const zoomStep = 0.2;
+            
+            function updateTransform() {
+                image.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            }
+            
+            function constrainPosition() {
+                const rect = viewer.getBoundingClientRect();
+                const imageRect = image.getBoundingClientRect();
+                
+                // Calculate bounds
+                const maxTranslateX = Math.max(0, (imageRect.width - rect.width) / 2);
+                const maxTranslateY = Math.max(0, (imageRect.height - rect.height) / 2);
+                
+                // Constrain translation
+                translateX = Math.max(-maxTranslateX, Math.min(maxTranslateX, translateX));
+                translateY = Math.max(-maxTranslateY, Math.min(maxTranslateY, translateY));
+            }
+            
+            // Mouse wheel zoom
+            viewer.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                
+                const rect = viewer.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const delta = e.deltaY > 0 ? -zoomStep : zoomStep;
+                const newScale = Math.max(minScale, Math.min(maxScale, scale + delta));
+                
+                if (newScale !== scale) {
+                    // Zoom towards mouse position
+                    const scaleDiff = newScale / scale;
+                    translateX = x - scaleDiff * (x - translateX);
+                    translateY = y - scaleDiff * (y - translateY);
+                    
+                    scale = newScale;
+                    constrainPosition();
+                    updateTransform();
+                }
+            });
+            
+            // Mouse drag to pan
+            viewer.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                lastTranslateX = translateX;
+                lastTranslateY = translateY;
+                viewer.style.cursor = 'grabbing';
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                
+                translateX = lastTranslateX + deltaX;
+                translateY = lastTranslateY + deltaY;
+                
+                constrainPosition();
+                updateTransform();
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                viewer.style.cursor = 'grab';
+            });
+            
+            // Touch support for mobile
+            let initialDistance = 0;
+            let initialScale = 1;
+            
+            viewer.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    // Pinch zoom start
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    initialDistance = Math.hypot(
+                        touch2.clientX - touch1.clientX,
+                        touch2.clientY - touch1.clientY
+                    );
+                    initialScale = scale;
+                } else if (e.touches.length === 1) {
+                    // Pan start
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    lastTranslateX = translateX;
+                    lastTranslateY = translateY;
+                }
+            });
+            
+            viewer.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                
+                if (e.touches.length === 2) {
+                    // Pinch zoom
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    const distance = Math.hypot(
+                        touch2.clientX - touch1.clientX,
+                        touch2.clientY - touch1.clientY
+                    );
+                    
+                    const newScale = Math.max(minScale, Math.min(maxScale, 
+                        initialScale * (distance / initialDistance)));
+                    
+                    if (newScale !== scale) {
+                        scale = newScale;
+                        constrainPosition();
+                        updateTransform();
+                    }
+                } else if (e.touches.length === 1 && isDragging) {
+                    // Pan
+                    const touch = e.touches[0];
+                    const deltaX = touch.clientX - startX;
+                    const deltaY = touch.clientY - startY;
+                    
+                    translateX = lastTranslateX + deltaX;
+                    translateY = lastTranslateY + deltaY;
+                    
+                    constrainPosition();
+                    updateTransform();
+                }
+            });
+            
+            viewer.addEventListener('touchend', () => {
+                isDragging = false;
+            });
+            
+            // Zoom buttons
+            zoomInBtn.addEventListener('click', () => {
+                scale = Math.min(maxScale, scale + zoomStep);
+                constrainPosition();
+                updateTransform();
+            });
+            
+            zoomOutBtn.addEventListener('click', () => {
+                scale = Math.max(minScale, scale - zoomStep);
+                constrainPosition();
+                updateTransform();
+            });
+            
+            zoomResetBtn.addEventListener('click', () => {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform();
+            });
+            
+            // Initialize
+            updateTransform();
+        }
+        
+        // Initialize sprite viewer when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initSpriteViewer);
+        
+        // Initialize element selector when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initElementSelector);
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8Direction 3D Spriter - Convert 3D Models to 2D Sprites</title>
+    <meta name="description" content="Desktop application for converting 3D models (FBX, GLTF, OBJ) into 2D sprite sheets. Perfect for game developers.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    
+    <!-- Header -->
+    <header class="bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">8D</span>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-white">8Direction 3D Spriter</h1>
+                        <p class="text-xs text-gray-400">3D to 2D Sprite Converter</p>
+                    </div>
+                </div>
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-gray-300 hover:text-white transition-colors">Features</a>
+                    <a href="#gallery" class="text-gray-300 hover:text-white transition-colors">Gallery</a>
+                    <a href="#pricing" class="text-gray-300 hover:text-white transition-colors">Pricing</a>
+                    <button class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all">
+                        Download
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen flex items-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h1 class="text-5xl lg:text-6xl font-bold leading-tight mb-6">
+                        Convert <span class="gradient-text">3D Models</span><br>
+                        into <span class="gradient-text">2D Sprites</span>
+                    </h1>
+                    <p class="text-xl text-gray-300 mb-8 leading-relaxed">
+                        Transform your 3D models (FBX, GLTF, OBJ) into professional sprite sheets. 
+                        Generate 8-directional sprites, animations, and custom angles in seconds.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                        <button class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-600 hover:to-purple-700 transition-all">
+                            Download Free Trial
+                        </button>
+                        <button class="bg-gray-800/50 border border-gray-700 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-700/50 transition-all">
+                            Watch Demo
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-6 text-center">
+                        <div>
+                            <div class="text-2xl font-bold text-white mb-1">FBX/GLTF/OBJ</div>
+                            <div class="text-gray-400 text-sm">Supported Formats</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-white mb-1">8-Direction</div>
+                            <div class="text-gray-400 text-sm">Auto Sprites</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-white mb-1">Instant</div>
+                            <div class="text-gray-400 text-sm">Generation</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- App Screenshot Placeholder -->
+                <div class="relative">
+                    <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 shadow-2xl">
+                        <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center mb-4">
+                            <div class="text-center">
+                                <div class="text-6xl mb-4">🖼️</div>
+                                <p class="text-gray-400">Main App Screenshot</p>
+                                <p class="text-sm text-gray-500">Upload your app screenshot here</p>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="text-white text-lg font-semibold mb-2">8Direction 3D Spriter Interface</h3>
+                            <p class="text-gray-400 text-sm">Simple drag-and-drop workflow</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="bg-gray-900 py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-white mb-6">
+                    Simple <span class="gradient-text">Three-Step Process</span>
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    From 3D model to game-ready sprites in just three easy steps.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Step 1 -->
+                <div class="bg-gray-800/50 rounded-2xl p-8 border border-gray-700 text-center">
+                    <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white mb-6 mx-auto">
+                        <span class="text-2xl font-bold">1</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Import Model</h3>
+                    <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center mb-4">
+                        <div class="text-center">
+                            <div class="text-4xl mb-2">📁</div>
+                            <p class="text-gray-400 text-sm">Import Screenshot</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300">Drag and drop your FBX, GLTF, or OBJ files</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="bg-gray-800/50 rounded-2xl p-8 border border-gray-700 text-center">
+                    <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white mb-6 mx-auto">
+                        <span class="text-2xl font-bold">2</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Configure</h3>
+                    <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center mb-4">
+                        <div class="text-center">
+                            <div class="text-4xl mb-2">⚙️</div>
+                            <p class="text-gray-400 text-sm">Settings Screenshot</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300">Set angles, animation frames, and output settings</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="bg-gray-800/50 rounded-2xl p-8 border border-gray-700 text-center">
+                    <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl flex items-center justify-center text-white mb-6 mx-auto">
+                        <span class="text-2xl font-bold">3</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Export</h3>
+                    <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center mb-4">
+                        <div class="text-center">
+                            <div class="text-4xl mb-2">💾</div>
+                            <p class="text-gray-400 text-sm">Export Screenshot</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300">Get your sprite sheets ready for any game engine</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-white mb-6">
+                    See It In <span class="gradient-text">Action</span>
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    Real examples of 3D models converted to 2D sprites
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Before/After Example 1 -->
+                <div class="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
+                    <h3 class="text-lg font-semibold text-white mb-4">8-Direction Character</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-sm text-gray-400 mb-2">Before: 3D Model</p>
+                            <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">🎮</div>
+                                    <p class="text-gray-400 text-xs">3D Model Image</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-400 mb-2">After: Sprite Sheet</p>
+                            <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">🖼️</div>
+                                    <p class="text-gray-400 text-xs">Sprite Sheet Result</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Before/After Example 2 -->
+                <div class="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
+                    <h3 class="text-lg font-semibold text-white mb-4">Side-Scrolling Animation</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-sm text-gray-400 mb-2">Before: 3D Animation</p>
+                            <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">🏃</div>
+                                    <p class="text-gray-400 text-xs">3D Animation</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-400 mb-2">After: Animation Frames</p>
+                            <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">🎞️</div>
+                                    <p class="text-gray-400 text-xs">Animation Sprites</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Before/After Example 3 -->
+                <div class="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
+                    <h3 class="text-lg font-semibold text-white mb-4">Custom Angle Views</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-sm text-gray-400 mb-2">Before: 3D Object</p>
+                            <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">🏠</div>
+                                    <p class="text-gray-400 text-xs">3D Building</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-400 mb-2">After: Multiple Angles</p>
+                            <div class="aspect-video bg-gray-700 rounded-lg flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">🔄</div>
+                                    <p class="text-gray-400 text-xs">Angle Variations</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="bg-gray-900 py-20">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-white mb-6">
+                    Simple <span class="gradient-text">Pricing</span>
+                </h2>
+                <p class="text-xl text-gray-300">
+                    Affordable pricing for indie game developers
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Web Trial -->
+                <div class="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-2 border-green-500/30 rounded-3xl p-8">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-white mb-2">Web Trial</h3>
+                        <p class="text-gray-300 mb-6">Try our web version</p>
+                        <div class="text-4xl font-bold text-white mb-2">$6.99</div>
+                        <div class="text-gray-400 text-sm">30-day access</div>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-green-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">Web-based converter</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-green-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">FBX, GLTF, OBJ support</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-green-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">Basic sprite generation</span>
+                        </li>
+                    </ul>
+                    <button class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-semibold">
+                        Try Web Version
+                    </button>
+                </div>
+
+                <!-- Desktop -->
+                <div class="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-blue-500/30 rounded-3xl p-8">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-white mb-2">Desktop</h3>
+                        <p class="text-gray-300 mb-6">Full desktop application</p>
+                        <div class="text-4xl font-bold text-white mb-2">$14.99</div>
+                        <div class="text-gray-400 text-sm">One-time purchase</div>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-blue-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">All web features</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-blue-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">Faster processing</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-blue-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">Offline use</span>
+                        </li>
+                    </ul>
+                    <button class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold">
+                        Buy Desktop
+                    </button>
+                </div>
+
+                <!-- Complete Bundle -->
+                <div class="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 border-purple-500/30 rounded-3xl p-8">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-white mb-2">Complete Bundle</h3>
+                        <p class="text-gray-300 mb-6">Desktop + Web forever</p>
+                        <div class="text-4xl font-bold text-white mb-2">$19.99</div>
+                        <div class="text-gray-400 text-sm">Best value</div>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-purple-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-purple-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">Everything from Desktop</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-purple-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-purple-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">Lifetime web access</span>
+                        </li>
+                        <li class="flex items-center space-x-3">
+                            <div class="w-5 h-5 bg-purple-500/20 rounded-full flex items-center justify-center">
+                                <span class="text-purple-400 text-xs">✓</span>
+                            </div>
+                            <span class="text-gray-300">Priority support</span>
+                        </li>
+                    </ul>
+                    <button class="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white px-8 py-4 rounded-xl font-semibold">
+                        Get Complete Bundle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-950 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="flex items-center justify-center space-x-3 mb-4">
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold">8D</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">8Direction 3D Spriter</h3>
+                </div>
+                <p class="text-gray-400 mb-6">
+                    Transform your 3D models into professional 2D sprites for game development.
+                </p>
+                <div class="text-sm text-gray-500">
+                    © 2025 8Direction 3D Spriter. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

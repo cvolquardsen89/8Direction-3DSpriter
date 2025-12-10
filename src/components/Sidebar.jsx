@@ -12,7 +12,7 @@ function Sidebar({ onFileSelect, isPlaying, setIsPlaying, animationTime, setAnim
   }
 
   return (
-    <div className="bg-gray-800 p-4 w-64 text-white">
+    <div className="bg-gray-800 p-4 w-64 text-white h-screen overflow-y-auto">
       <div className="space-y-6">
         <div>
           <h3 className="text-white font-semibold mb-2">Import</h3>

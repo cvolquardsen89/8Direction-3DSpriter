@@ -162,7 +162,7 @@ function Model({ url, fileName, isPlaying, animationTime, setMaxTime, setAnimati
   return model ? <group ref={modelRef}><primitive object={model} /></group> : null
 }
 
-function ExportHandler({ fileName, maxTime, exportParams, modelRef, exportFps, exportFrameSkip, exportType, setExportTime, exportResolution }) {
+function ExportHandler({ fileName, maxTime, exportParams, modelRef, exportFps, exportFrameSkip, exportType, setExportTime, exportResolution, setIsExporting }) {
   const { gl, scene, camera } = useThree()
 
   const exportSpriteSheet = async () => {
@@ -172,6 +172,11 @@ function ExportHandler({ fileName, maxTime, exportParams, modelRef, exportFps, e
       alert('No model loaded!')
       return
     }
+    
+    setIsExporting(true)
+    
+    // Wait for React to re-render and hide the grid
+    await new Promise(resolve => setTimeout(resolve, 100))
 
     console.log('Model ref:', modelRef.current)
     console.log('Model children:', modelRef.current.children)
@@ -275,8 +280,9 @@ function ExportHandler({ fileName, maxTime, exportParams, modelRef, exportFps, e
       }
     }
 
-    // Reset export time
+    // Reset export time and exporting state
     setExportTime(undefined)
+    setIsExporting(false)
 
     // Calculate sprite sheet dimensions
     let rows, cols
@@ -373,6 +379,7 @@ function LockViewHandler({ lockTrigger, setCameraTheta, setCameraPhi, setCameraD
 function Viewer({ fileUrl, fileName, isPlaying, animationTime, setMaxTime, maxTime, fov, lightColor, lightIntensity, setAnimationTime, cameraTheta, cameraPhi, cameraDistance, cameraLookAtX, cameraLookAtY, cameraLookAtZ, enableOrbit, exportFps, exportFrameSkip, exportType, exportResolution, lockCurrentViewSetter, setCameraTheta, setCameraPhi, setCameraDistance, setCameraLookAtX, setCameraLookAtY, setCameraLookAtZ }) {
   const modelRef = useRef()
   const [exportTime, setExportTime] = useState()
+  const [isExporting, setIsExporting] = useState(false)
   const [lockTrigger, setLockTrigger] = useState(0)
 
   useEffect(() => {
@@ -424,7 +431,7 @@ function Viewer({ fileUrl, fileName, isPlaying, animationTime, setMaxTime, maxTi
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={lightIntensity} color={lightColor} />
         {/* Grid helper - only show when not exporting */}
-        {!exportTime && <Grid args={[10, 10]} cellSize={1} cellThickness={0.5} cellColor="#666666" sectionSize={5} sectionThickness={1} sectionColor="#888888" fadeDistance={25} fadeStrength={1} />}
+        {!exportTime && !isExporting && <Grid args={[10, 10]} cellSize={1} cellThickness={0.5} cellColor="#666666" sectionSize={5} sectionThickness={1} sectionColor="#888888" fadeDistance={25} fadeStrength={1} />}
         {/* Only show the cube if no model is loaded */}
         {!fileUrl && (
           <mesh>
@@ -451,12 +458,13 @@ function Viewer({ fileUrl, fileName, isPlaying, animationTime, setMaxTime, maxTi
           fileName={fileName} 
           maxTime={maxTime} 
           exportParams={exportParams} 
-          modelRef={modelRef} 
+          modelRef={modelRef}
           exportFps={exportFps}
           exportFrameSkip={exportFrameSkip}
           exportType={exportType}
           setExportTime={setExportTime}
           exportResolution={exportResolution}
+          setIsExporting={setIsExporting}
         />
       </Canvas>
     </div>

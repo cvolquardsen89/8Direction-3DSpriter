@@ -11,7 +11,7 @@ function App() {
   const [fov, setFov] = useState(75)
   const [lightColor, setLightColor] = useState('#ffffff')
   const [lightIntensity, setLightIntensity] = useState(1)
-  const [cameraTheta, setCameraTheta] = useState(Math.PI / 2)
+  const [cameraTheta, setCameraTheta] = useState(Math.PI)
   const [cameraPhi, setCameraPhi] = useState(Math.PI * 50 / 180)
   const [cameraDistance, setCameraDistance] = useState(7.5)
   const [cameraLookAtX, setCameraLookAtX] = useState(0.0)

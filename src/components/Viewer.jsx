@@ -1,6 +1,6 @@
 import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber'
 import { OrbitControls, Grid } from '@react-three/drei'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
@@ -15,7 +15,7 @@ function CameraUpdater({ fov }) {
   return null
 }
 
-function CameraPositioner({ theta, phi, distance, lookAtX, lookAtY, lookAtZ, enableOrbit }) {
+function CameraPositioner({ theta, phi, distance, lookAtX, lookAtY, lookAtZ, enableOrbit, refreshToken }) {
   const { camera, controls } = useThree()
   useEffect(() => {
     if (enableOrbit && controls) {
@@ -25,7 +25,7 @@ function CameraPositioner({ theta, phi, distance, lookAtX, lookAtY, lookAtZ, ena
       camera.lookAt(lookAtX, lookAtY, lookAtZ)
       camera.updateProjectionMatrix()
     }
-  }, [lookAtX, lookAtY, lookAtZ, camera, controls, enableOrbit])
+  }, [lookAtX, lookAtY, lookAtZ, camera, controls, enableOrbit, refreshToken])
 
   useEffect(() => {
     if (!enableOrbit) {
@@ -38,7 +38,7 @@ function CameraPositioner({ theta, phi, distance, lookAtX, lookAtY, lookAtZ, ena
       camera.lookAt(lookAtX, lookAtY, lookAtZ)
       camera.updateProjectionMatrix()
     }
-  }, [theta, phi, distance, lookAtX, lookAtY, lookAtZ, camera, enableOrbit])
+  }, [theta, phi, distance, lookAtX, lookAtY, lookAtZ, camera, enableOrbit, refreshToken])
 
   return null
 }
@@ -162,10 +162,12 @@ function Model({ url, fileName, isPlaying, animationTime, setMaxTime, setAnimati
   return model ? <group ref={modelRef}><primitive object={model} /></group> : null
 }
 
-function ExportHandler({ fileName, maxTime, exportParams, modelRef, exportFps, exportFrameSkip, exportType, setExportTime, exportResolution, setIsExporting }) {
+function ExportHandler({ fileName, maxTime, exportParams, modelRef, exportFps, exportFrameSkip, exportType, setExportTime, exportResolution, setIsExporting, onExportDone }) {
   const { gl, scene, camera } = useThree()
 
-  const exportSpriteSheet = async () => {
+  const { cameraDistance, cameraPhi, cameraLookAtX, cameraLookAtY, cameraLookAtZ } = exportParams
+
+  const exportSpriteSheet = useCallback(async () => {
     console.log('Starting sprite sheet export')
     if (!modelRef.current) {
       console.log('No model loaded')
@@ -183,7 +185,6 @@ function ExportHandler({ fileName, maxTime, exportParams, modelRef, exportFps, e
     console.log('Model position:', modelRef.current.position)
     console.log('Model scale:', modelRef.current.scale)
 
-    const context = gl.getContext()
     const spriteSize = Math.floor(Number(exportResolution)) || 128
 
     let directions, totalFrames
@@ -191,7 +192,7 @@ function ExportHandler({ fileName, maxTime, exportParams, modelRef, exportFps, e
       directions = 8
       totalFrames = 1
     } else if (exportType === 'platformer') {
-      directions = 1
+      directions = 2
       totalFrames = Math.floor(maxTime * exportFps)
     } else { // 8directions
       directions = 8
@@ -200,95 +201,103 @@ function ExportHandler({ fileName, maxTime, exportParams, modelRef, exportFps, e
 
     const capturedImages = []
 
-    // Store original camera settings
+    // Store original camera/render settings so the viewer returns to exactly the same view.
     const originalPosition = camera.position.clone()
+    const originalQuaternion = camera.quaternion.clone()
+    const originalUp = camera.up.clone()
     const originalFov = camera.fov
+    const originalAspect = camera.aspect
     const originalSize = { width: gl.domElement.width, height: gl.domElement.height }
     const originalClearColor = gl.getClearColor(new THREE.Color())
     const originalClearAlpha = gl.getClearAlpha()
 
-    // Set transparent clear color (black with 0 alpha = transparent)
-    gl.setClearColor(0x000000, 0)
-    
-    // Temporarily resize renderer for sprite capture
-    gl.setSize(spriteSize, spriteSize, false)
-    camera.aspect = 1
-    camera.updateProjectionMatrix()
+    try {
+      // Set transparent clear color (black with 0 alpha = transparent)
+      gl.setClearColor(0x000000, 0)
 
-    // Render each direction and frame
-    for (let dir = 0; dir < directions; dir++) {
-      const angle = (dir / directions) * Math.PI * 2
-      for (let frame = 0; frame < totalFrames; frame++) {
-        if (frame % (exportFrameSkip + 1) !== 0) continue
+      // Temporarily resize renderer for sprite capture
+      gl.setSize(spriteSize, spriteSize, false)
+      camera.aspect = 1
+      camera.updateProjectionMatrix()
 
-        const frameTime = frame / exportFps
+      // Render each direction and frame
+      for (let dir = 0; dir < directions; dir++) {
+        for (let frame = 0; frame < totalFrames; frame++) {
+          if (frame % (exportFrameSkip + 1) !== 0) continue
 
-        // Set camera angle for this direction - use simpler positioning
-        const radius = exportParams.cameraDistance || 5
-        const height = exportParams.cameraPhi || Math.PI / 2
-        const angle = (dir / directions) * Math.PI * 2
-        
-        // Position camera in a circle around the look-at point
-        camera.position.x = exportParams.cameraLookAtX + radius * Math.cos(angle) * Math.sin(height)
-        camera.position.y = exportParams.cameraLookAtY + radius * Math.cos(height)
-        camera.position.z = exportParams.cameraLookAtZ + radius * Math.sin(angle) * Math.sin(height)
-        
-        camera.lookAt(exportParams.cameraLookAtX, exportParams.cameraLookAtY, exportParams.cameraLookAtZ)
-        camera.updateMatrixWorld()
+          const frameTime = frame / exportFps
 
-        // Debug: Log camera position
-        console.log(`Direction ${dir}, Frame ${frame}: Camera at`, camera.position, 'looking at', exportParams.cameraLookAtX, exportParams.cameraLookAtY, exportParams.cameraLookAtZ)
+          // Set camera angle for this direction - use simpler positioning
+          const radius = cameraDistance || 5
+          const height = cameraPhi || Math.PI / 2
+          let angle
 
-        // Set animation time
-        setExportTime(frameTime)
-
-        // Wait for next tick to ensure mixer is updated
-        await new Promise(resolve => setTimeout(resolve, 0))
-
-        // Clear with transparent background and render
-        gl.clear()
-
-        // Render the scene
-        gl.render(scene, camera)
-
-        // Get image data from the canvas instead of WebGL directly
-        const canvas = gl.domElement
-        const tempCanvas = document.createElement('canvas')
-        tempCanvas.width = spriteSize
-        tempCanvas.height = spriteSize
-        const tempCtx = tempCanvas.getContext('2d')
-        
-        // Draw the WebGL canvas content to our temp canvas
-        tempCtx.drawImage(canvas, 0, 0, spriteSize, spriteSize)
-        
-        // Get image data from the temp canvas
-        const imageData = tempCtx.getImageData(0, 0, spriteSize, spriteSize)
-        const pixels = imageData.data
-        
-        // Debug: Check if pixels have any non-zero values
-        let hasVisiblePixels = false
-        for (let i = 0; i < pixels.length; i += 4) {
-          if (pixels[i] > 0 || pixels[i + 1] > 0 || pixels[i + 2] > 0 || pixels[i + 3] > 0) {
-            hasVisiblePixels = true
-            break
+          if (exportType === 'platformer') {
+            // For platformer: 0° (right-facing) and 180° (left-facing)
+            angle = dir * Math.PI
+          } else {
+            // For other modes: full 360° circle
+            angle = (dir / directions) * Math.PI * 2
           }
-        }
-        console.log(`Frame ${frame}, Direction ${dir}: Has visible pixels:`, hasVisiblePixels)
-        console.log('Sample pixels (first 20):', pixels.slice(0, 20))
-        
-        capturedImages.push(imageData)
-      }
-    }
 
-    // Reset export time and exporting state
-    setExportTime(undefined)
-    setIsExporting(false)
+          // Position camera in a circle around the look-at point
+          camera.position.x = cameraLookAtX + radius * Math.cos(angle) * Math.sin(height)
+          camera.position.y = cameraLookAtY + radius * Math.cos(height)
+          camera.position.z = cameraLookAtZ + radius * Math.sin(angle) * Math.sin(height)
+
+          camera.lookAt(cameraLookAtX, cameraLookAtY, cameraLookAtZ)
+          camera.updateMatrixWorld()
+
+          // Set animation time
+          setExportTime(frameTime)
+
+          // Wait for next tick to ensure mixer is updated
+          await new Promise(resolve => setTimeout(resolve, 0))
+
+          // Clear with transparent background and render
+          gl.clear()
+
+          // Render the scene
+          gl.render(scene, camera)
+
+          // Get image data from the canvas instead of WebGL directly
+          const canvas = gl.domElement
+          const tempCanvas = document.createElement('canvas')
+          tempCanvas.width = spriteSize
+          tempCanvas.height = spriteSize
+          const tempCtx = tempCanvas.getContext('2d')
+
+          // Draw the WebGL canvas content to our temp canvas
+          tempCtx.drawImage(canvas, 0, 0, spriteSize, spriteSize)
+
+          // Get image data from the temp canvas
+          const imageData = tempCtx.getImageData(0, 0, spriteSize, spriteSize)
+          capturedImages.push(imageData)
+        }
+      }
+    } finally {
+      // Always restore camera/render state, even if export fails.
+      setExportTime(undefined)
+      setIsExporting(false)
+
+      gl.setSize(originalSize.width, originalSize.height, false)
+      camera.aspect = originalAspect
+      camera.fov = originalFov
+      camera.position.copy(originalPosition)
+      camera.quaternion.copy(originalQuaternion)
+      camera.up.copy(originalUp)
+      camera.updateProjectionMatrix()
+      camera.updateMatrixWorld()
+      gl.setClearColor(originalClearColor, originalClearAlpha)
+
+      onExportDone?.()
+    }
 
     // Calculate sprite sheet dimensions
     let rows, cols
     if (exportType === 'platformer') {
-      rows = 1
-      cols = capturedImages.length
+      rows = 2
+      cols = capturedImages.length / directions
     } else if (exportType === '8directions') {
       rows = directions
       cols = capturedImages.length / directions
@@ -318,37 +327,32 @@ function ExportHandler({ fileName, maxTime, exportParams, modelRef, exportFps, e
       finalCtx.putImageData(capturedImages[i], x, y)
     }
 
-    // Restore original settings
-    gl.setSize(originalSize.width, originalSize.height, false)
-    camera.aspect = originalSize.width / originalSize.height
-    camera.position.copy(originalPosition)
-    camera.fov = originalFov
-    camera.updateProjectionMatrix()
-    gl.setClearColor(originalClearColor, originalClearAlpha)
-
     // Download the sprite sheet
     console.log('Creating blob and downloading')
     canvas.toBlob((blob) => {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${fileName || 'model'}_spritesheet.png`
+      const exportPrefix = exportType === 'single' ? 'singleframe' : exportType
+      const baseName = (fileName || 'model').replace(/\.[^./\\]+$/, '')
+      const safeBaseName = baseName.replace(/[^a-z0-9._-]+/gi, '_').replace(/^_+|_+$/g, '') || 'model'
+      a.download = `${safeBaseName}_${exportPrefix}_spritesheet.png`
       document.body.appendChild(a)
       a.click()
       console.log('Download triggered')
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
     }, 'image/png')
-  }
+  }, [camera, cameraDistance, cameraLookAtX, cameraLookAtY, cameraLookAtZ, cameraPhi, exportFps, exportFrameSkip, exportResolution, exportType, fileName, gl, maxTime, modelRef, scene, setExportTime, setIsExporting])
 
   useEffect(() => {
-    const handleExport = (event) => {
+    const handleExport = () => {
       exportSpriteSheet()
     }
-    
+
     window.addEventListener('exportSpriteSheet', handleExport)
     return () => window.removeEventListener('exportSpriteSheet', handleExport)
-  }, [fileName, maxTime])
+  }, [exportSpriteSheet])
 
   return null
 }
@@ -365,7 +369,10 @@ function LockViewHandler({ lockTrigger, setCameraTheta, setCameraPhi, setCameraD
       }
       const position = camera.position
       const distance = position.length()
-      const theta = Math.atan2(position.x, position.z)
+      // Match CameraPositioner convention:
+      // x = r*sin(phi)*cos(theta), z = r*sin(phi)*sin(theta)  => theta = atan2(z, x)
+      let theta = Math.atan2(position.z, position.x)
+      if (theta < 0) theta += Math.PI * 2
       const phi = Math.acos(position.y / distance)
       setCameraTheta(theta)
       setCameraPhi(phi)
@@ -381,6 +388,7 @@ function Viewer({ fileUrl, fileName, isPlaying, animationTime, setMaxTime, maxTi
   const [exportTime, setExportTime] = useState()
   const [isExporting, setIsExporting] = useState(false)
   const [lockTrigger, setLockTrigger] = useState(0)
+  const [cameraRefreshToken, setCameraRefreshToken] = useState(0)
 
   useEffect(() => {
     if (lockCurrentViewSetter) {
@@ -418,6 +426,7 @@ function Viewer({ fileUrl, fileName, isPlaying, animationTime, setMaxTime, maxTi
           lookAtY={cameraLookAtY} 
           lookAtZ={cameraLookAtZ} 
           enableOrbit={enableOrbit}
+          refreshToken={cameraRefreshToken}
         />
         <LockViewHandler 
           lockTrigger={lockTrigger}
@@ -465,6 +474,7 @@ function Viewer({ fileUrl, fileName, isPlaying, animationTime, setMaxTime, maxTi
           setExportTime={setExportTime}
           exportResolution={exportResolution}
           setIsExporting={setIsExporting}
+          onExportDone={() => setCameraRefreshToken(t => t + 1)}
         />
       </Canvas>
     </div>

@@ -3,6 +3,8 @@ import { useRef } from 'react'
 function Sidebar({ onFileSelect, isPlaying, setIsPlaying, animationTime, setAnimationTime, maxTime, fov, setFov, lightColor, setLightColor, lightIntensity, setLightIntensity, cameraTheta, setCameraTheta, cameraPhi, setCameraPhi, cameraDistance, setCameraDistance, cameraLookAtX, setCameraLookAtX, cameraLookAtY, setCameraLookAtY, cameraLookAtZ, setCameraLookAtZ, enableOrbit, setEnableOrbit, exportFps, setExportFps, exportFrameSkip, setExportFrameSkip, exportType, setExportType, exportResolution, setExportResolution, lockCurrentView }) {
   const fileInputRef = useRef(null)
 
+  const normalizedThetaDeg = ((((cameraTheta * 180) / Math.PI) % 360) + 360) % 360
+
   const handleFileChange = (e) => {
     const file = e.target.files[0]
     if (file) {
@@ -91,7 +93,7 @@ function Sidebar({ onFileSelect, isPlaying, setIsPlaying, animationTime, setAnim
             </div>
           </div>
           <div className="mb-2">
-            <label className="block text-sm mb-1" htmlFor="theta-range">Horizontal Angle: {(cameraTheta * 180 / Math.PI).toFixed(0)}°</label>
+            <label className="block text-sm mb-1" htmlFor="theta-range">Horizontal Angle: {normalizedThetaDeg.toFixed(0)}°</label>
             <div className="flex gap-2">
               <input
                 type="range"
@@ -109,7 +111,7 @@ function Sidebar({ onFileSelect, isPlaying, setIsPlaying, animationTime, setAnim
                 min="0"
                 max="360"
                 step="1"
-                value={(cameraTheta * 180 / Math.PI).toFixed(0)}
+                value={normalizedThetaDeg.toFixed(0)}
                 onChange={(e) => setCameraTheta((parseFloat(e.target.value) || 0) * Math.PI / 180)}
                 className="w-16 px-2 py-1 bg-gray-700 text-white rounded"
                 id="theta-number"
